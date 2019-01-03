@@ -292,3 +292,5 @@ Temp
 /JavelinView3/PortableViews/*
 
 !/JavelinView3/PortableViews/web.config
+/PageDataExtractor/bin
+/PageDataExtractor/obj
