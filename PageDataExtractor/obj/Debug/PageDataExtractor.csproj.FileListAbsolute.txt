@@ -1,0 +1,15 @@
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\PageDataExtractor.exe.config
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\PageDataExtractor.exe
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\PageDataExtractor.pdb
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\HtmlAgilityPack.CssSelectors.dll
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\HtmlAgilityPack.dll
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\HtmlAgilityPack.xml
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\HtmlAgilityPack.CssSelectors.pdb
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\Newtonsoft.Json.pdb
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\obj\Debug\PageDataExtractor.csprojAssemblyReference.cache
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\obj\Debug\PageDataExtractor.csproj.CoreCompileInputs.cache
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\obj\Debug\PageDataExtractor.csproj.CopyComplete
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\obj\Debug\PageDataExtractor.exe
+C:\Users\Andrei\Documents\Visual Studio 2017\Projects\PageDataExtractor\PageDataExtractor\obj\Debug\PageDataExtractor.pdb
