@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using HtmlAgilityPack;
@@ -14,54 +16,86 @@ namespace PageDataExtractor
     {
         static void Main(string[] args)
         {
-            var sourceFolder = @"C:\Downloaded Web Sites\www.interlab.ru\katalog-oborudovaniya\";
+            //            var images = YandexParser.GetImages("Железная дорога");
+            //
+            //            return;
+
+            var sourceFolder = @"C:\Downloaded Web Sites\www.hccomposite.com\press\news\archive";
             var htmlFiles = Directory.EnumerateFiles(sourceFolder, "*.html", SearchOption.AllDirectories).ToList();
             var parsedFiles = new List<XElement>();
 
-            foreach (var htmlFile in htmlFiles)
+            for (var index = 0; index < htmlFiles.Count; index++)
             {
+                var htmlFile = htmlFiles[index];
                 var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(File.ReadAllText(htmlFile, Encoding.UTF8));
+                var html = File.ReadAllText(htmlFile, Encoding.Default);
+
+                htmlDocument.LoadHtml(html);
+
                 var dataItem = new DataItem
                 {
                     Tag = "Page",
-                    Selector = ".ContentAreaPage",
+                    Selector = ".body_top",
                     Node = htmlDocument.DocumentNode,
+
                     DataItems = new List<DataItem>
                     {
                         new DataItem
                         {
                             Tag = "Header",
-                            Selector = ".TitleH"
+                            Selector = "h1"
                         },
                         new DataItem
                         {
                             Tag = "Description",
-                            Selector = ".ItemInfo"
-                        },
-                        new DataItem
-                        {
-                            Tag = "Images",
-                            Selector = ".carousel-inner",
-                            DataItems = new List<DataItem>
-                            {
-                                new DataItem
-                                {
-                                    Selector = ".img-responsive",
-                                    Attribute = "src",
-                                    Tag = "Image"
-                                }
-                            }
+                            Selector = ".inner-left p",
+                            JoinContent = true,
+                            OuterHtml = true
                         }
-
                     }
+
+                    //                    DataItems = new List<DataItem>
+                    //                    {
+                    //                        new DataItem
+                    //                        {
+                    //                            Tag = "Header",
+                    //                            Selector = ".TitleH"
+                    //                        },
+                    //                        new DataItem
+                    //                        {
+                    //                            Tag = "Description",
+                    //                            Selector = ".ItemInfo"
+                    //                        },
+                    //                        new DataItem
+                    //                        {
+                    //                            Tag = "Images",
+                    //                            Selector = ".carousel-inner",
+                    //                            DataItems = new List<DataItem>
+                    //                            {
+                    //                                new DataItem
+                    //                                {
+                    //                                    Selector = ".img-responsive",
+                    //                                    Attribute = "src",
+                    //                                    Tag = "Image"
+                    //                                }
+                    //                            }
+                    //                        }
+                    //
+                    //                    }
                 };
                 var process = dataItem.Process();
-                if (process.Any())
+                var totalItems = process.Count;
+                for (var i = 0; i < process.Count; i++)
                 {
-                    parsedFiles.AddRange(process);
+                    var element = process[i];
+                    var originalImage = YandexParser.GetImages(element.Element("Header").Value).First().original;
+                    element.Add(new XElement("Image", originalImage));
                 }
 
+                if (process.Any())
+                    parsedFiles.AddRange(process);
+
+                Debug.WriteLine("Item #" + index + " Of " + htmlFiles.Count);
             }
 
 
@@ -72,8 +106,9 @@ namespace PageDataExtractor
                     )
                 );
 
-            document.Save(@"C:\output\Sample.xml");
+            document.Save(@"C:\output\_Result.xml");
         }
+
     }
 
 
@@ -85,6 +120,8 @@ namespace PageDataExtractor
         public List<DataItem> DataItems { get; set; } = new List<DataItem>();
         public HtmlNode Node { get; set; }
         public string Attribute { get; set; }
+        public bool JoinContent { get; set; } = false;
+        public bool OuterHtml { get; set; }
     }
 
     public static class ProcessExtensions
@@ -96,8 +133,6 @@ namespace PageDataExtractor
             if (dataItem.DataItems.Any())
             {
                 var parentElement = new XElement(dataItem.Tag);
-
-
 
                 foreach (var htmlNode in htmlNodes)
                 {
@@ -114,12 +149,23 @@ namespace PageDataExtractor
             }
             else
             {
-                var content = htmlNodes
-                    .Select(x => new XElement(dataItem.Tag, x.ExtractContent(dataItem.Attribute)))
+
+                var contentItems = htmlNodes
+                    .Select(x => new XElement(dataItem.Tag,
+                        x.ExtractContent(dataItem.Attribute)))
                     .ToList();
-                if (!content.Any())
+                if (!contentItems.Any())
                     return null;
-                elements.AddRange(content);
+
+                if (dataItem.JoinContent)
+                {
+                    var singleContent = contentItems.Aggregate("", (item, el) => item + el.Value);
+                    elements.Add(new XElement(dataItem.Tag, singleContent.CleanUp()));
+                }
+                else
+                {
+                    elements.AddRange(contentItems);
+                }
             }
 
 
@@ -131,14 +177,25 @@ namespace PageDataExtractor
             var validXmlChars = text.Where(XmlConvert.IsXmlChar).ToArray();
             return new string(validXmlChars);
         }
-        static object ExtractContent(this HtmlNode node, string attribute)
+        static object ExtractContent(this HtmlNode node, string attribute, bool outerHtml = false)
         {
             if (attribute != null)
                 return node.Attributes.First(x => x.Name == attribute).Value;
-            var escaped = System.Security.SecurityElement.Escape(node.InnerHtml);
-            if (escaped != node.InnerHtml)
-                return new XCData(node.InnerHtml.RemoveInvalidXmlChars().Trim());
-            return node.InnerHtml.Trim();
+
+            var html = outerHtml ? node.OuterHtml : node.InnerHtml;
+            html = html.StripHtml();
+            return CleanUp(html);
         }
+
+        private static object CleanUp(this string html)
+        {
+            var escaped = System.Security.SecurityElement.Escape(html);
+            if (escaped != html)
+                return new XCData(html.RemoveInvalidXmlChars().Trim());
+            return html.Trim();
+        }
+
+        public static string RemoveNode(this string content, string node) => Regex.Replace(content, $"<{node}(.*)</{node}>", "");
+        public static string StripHtml(this string input) => Regex.Replace(input, "<.*?>", String.Empty);
     }
 }
